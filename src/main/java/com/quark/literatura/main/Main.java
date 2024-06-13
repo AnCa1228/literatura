@@ -1,6 +1,5 @@
 package com.quark.literatura.main;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quark.literatura.models.Autor;
 import com.quark.literatura.models.Biblioteca;
 import com.quark.literatura.models.DatosBiblioteca;
@@ -9,14 +8,10 @@ import com.quark.literatura.repository.AutorRepository;
 import com.quark.literatura.repository.LibrosRepository;
 import com.quark.literatura.service.ConsumirAPI;
 import com.quark.literatura.service.ConvierteDatos;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Main {
 
@@ -25,6 +20,8 @@ public class Main {
     private ConsumirAPI consumirAPI = new ConsumirAPI();
     private ConvierteDatos convierteDatos = new ConvierteDatos();
     private Biblioteca biblioteca;
+    private List<Libros> librosBuscados;
+    private List<Autor> autoresBuscados;
     private LibrosRepository librosRepositorio;
     private AutorRepository autorRepositorio;
 
@@ -41,7 +38,7 @@ public class Main {
                     1 - Libros Disponibles
                     2 - Buscar libros por titulo
                     3 - Buscar libros por autor
-                    4 - Mostrar libros teniendo en cuenta si el autor estaba vivo en un rango de tiempo
+                    4 - Buscar libros teniendo en cuenta si el autor estaba vivo en un rango de tiempo
                     5 - Listar libros buscados
                     6 - Listar autores buscados
                     7 - Listar autores vivos en determinado año
@@ -64,11 +61,15 @@ public class Main {
                     buscarLibrosPorAutor();
                     break;
                 case 4:
-                    librosRangoTiempo();
+                    buscarLibrosPorRangoTiempo();
                     break;
                 case 5:
+                    listarLibrosBuscados();
                     break;
                 case 6:
+                    listarAutoresBuscados();
+                    break;
+                case 7:
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -86,29 +87,46 @@ public class Main {
         System.out.println(biblioteca);
     }
 
-    private void buscarLibrosPorTitulo() {
+    private void buscarLibrosPorTitulo(){
         System.out.println("Introduzca el titulo del libro:");
         String titulo = entrada.nextLine();
         var json = consumirAPI.obtenerDatos(URL + "?search=" + titulo.replace(" ", "%20"));
+        mostrarLibros(json);
+    }
+
+    private void buscarLibrosPorAutor() {
+    }
+
+    private void buscarLibrosPorRangoTiempo() {
+        System.out.println("Introduzca el año inicial:");
+        String inicio = entrada.nextLine();
+        System.out.println("Introduzca el año final:");
+        String fin = entrada.nextLine();
+        var json = consumirAPI.obtenerDatos(URL + "?author_year_start=" + inicio + "&author_year_end=" + fin);
+        mostrarLibros(json);
+    }
+
+    private void listarLibrosBuscados() {
+        /*librosBuscados = librosRepositorio.findAll();
+
+        librosBuscados.stream()
+                .forEach(System.out::println);*/
+    }
+
+    private void listarAutoresBuscados(){
+    }
+
+    private void mostrarLibros(String json) {
         DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
         Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
         System.out.println(biblioteca);
 
-        for (Libros libro : biblioteca.getDatosLibros()) {
-            System.out.println("");
-            System.out.println("-------- LIBRO --------");
-            System.out.println("Id: " + libro.getId());
-            System.out.println("Titulo: " + libro.getTitulo());
-            System.out.println("Autor: " + libro.getAutores());
-            System.out.println("Idioma: " + libro.getIdiomas());
-            System.out.println("Número de descargas: " + libro.getCantidadDescargas());
-            System.out.println("-----------------------");
-            System.out.println("");
-        }
+        biblioteca.getDatosLibros().forEach(this::imprimirLbro);
 
-        var agregar = -1;
-        while (agregar != 1 && agregar != 2) {
-            var opciones = """
+        if(biblioteca.getTotalLibros()!=0){
+            var agregar = -1;
+            while (agregar != 1 && agregar != 2) {
+                var opciones = """
                     
                     ¿Desea agregar algun libro a su listado?
                     
@@ -116,22 +134,25 @@ public class Main {
                     2 - No
                     
                     """;
-            System.out.println(opciones);
-            agregar = entrada.nextInt();
-            entrada.nextLine();
+                System.out.println(opciones);
+                agregar = entrada.nextInt();
+                entrada.nextLine();
 
-            switch (agregar) {
-                case 1:
-                    System.out.println("Introduzca el id del libro que desea añadir a su listado");
-                    int idLibroSeleccionado = entrada.nextInt();
-                    entrada.nextLine();
-                    libroPorID(idLibroSeleccionado);
-                    break;
-                case 2:
-                    break;
-                default:
-                    System.out.println("Opción inválida");
+                switch (agregar) {
+                    case 1:
+                        System.out.println("Introduzca el id del libro que desea añadir a su listado");
+                        int idLibroSeleccionado = entrada.nextInt();
+                        entrada.nextLine();
+                        libroPorID(idLibroSeleccionado);
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        System.out.println("Opción inválida");
+                }
             }
+        }else {
+            System.out.println("Libro no encontrado");
         }
 
     }
@@ -141,76 +162,35 @@ public class Main {
         DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
         Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
 
-        for (Libros libro : biblioteca.getDatosLibros()) {
-            for (Autor autor : libro.getAutores()) {
-                autorRepositorio.save(autor);
-            }
-
+        biblioteca.getDatosLibros().forEach(libro -> {
+            libro.getAutores().forEach(autorRepositorio::save);
             librosRepositorio.save(libro);
-
-            System.out.println("");
-            System.out.println("-------- LIBRO AGREGADO --------");
-            System.out.println("Id: " + libro.getId());
-            System.out.println("Titulo: " + libro.getTitulo());
-            System.out.println("Autor: " + libro.getAutores());
-            System.out.println("Idioma: " + libro.getIdiomas());
-            System.out.println("Número de descargas: " + libro.getCantidadDescargas());
-            System.out.println("--------------------------------");
-            System.out.println("");
-        }
+            imprimirLibroAgregado(libro);
+        });
     }
 
-    private void buscarLibrosPorAutor() {
+    private void imprimirLbro(Libros libro){
+        System.out.println("""
+                -------- LIBRO --------
+                Id: %d
+                Titulo: %s
+                Autor: %s
+                Idioma: %s
+                Número de descargas: %d
+                -----------------------
+                """.formatted(libro.getId(), libro.getTitulo(), libro.getAutores(), libro.getIdiomas(), libro.getCantidadDescargas()));
     }
 
-    private void librosRangoTiempo(){
-        System.out.println("Introduzca el año inicial:");
-        String inicio = entrada.nextLine();
-        System.out.println("Introduzca el año final:");
-        String fin = entrada.nextLine();
-        var json = consumirAPI.obtenerDatos(URL + "?author_year_start=" + inicio + "&author_year_end=" + fin);
-        DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
-        Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
-        System.out.println(biblioteca);
-
-        for (Libros libro : biblioteca.getDatosLibros()) {
-            System.out.println("");
-            System.out.println("-------- LIBRO --------");
-            System.out.println("Id: " + libro.getId());
-            System.out.println("Titulo: " + libro.getTitulo());
-            System.out.println("Autor: " + libro.getAutores());
-            System.out.println("Idioma: " + libro.getIdiomas());
-            System.out.println("Número de descargas: " + libro.getCantidadDescargas());
-            System.out.println("-----------------------");
-            System.out.println("");
-        }
-
-        var agregar = -1;
-        while (agregar != 1 && agregar != 2) {
-            var opciones = """
-                    
-                    ¿Desea agregar algun libro a su listado?
-                    
-                    1 - Si
-                    2 - No
-                    
-                    """;
-            System.out.println(opciones);
-            agregar = entrada.nextInt();
-            entrada.nextLine();
-
-            switch (agregar) {
-                case 1:
-                    System.out.println("Introduzca el id del libro que desea añadir a su listado");
-                    int idLibroSeleccionado = entrada.nextInt();
-                    entrada.nextLine();
-                    libroPorID(idLibroSeleccionado);
-                    break;
-                case 2:
-                    break;
-                default:
-                    System.out.println("Opción inválida");
-            }
-        }
+    private void imprimirLibroAgregado(Libros libro) {
+        System.out.println("""
+                
+                -------- LIBRO AGREGADO --------
+                Id: %d
+                Titulo: %s
+                Autor: %s
+                Idioma: %s
+                Número de descargas: %d
+                --------------------------------
+                """.formatted(libro.getId(), libro.getTitulo(), libro.getAutores(), libro.getIdiomas(), libro.getCantidadDescargas()));
     }
 }
