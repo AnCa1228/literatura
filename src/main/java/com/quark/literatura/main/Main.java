@@ -39,8 +39,8 @@ public class Main {
                     2 - Buscar libros por titulo
                     3 - Buscar libros por autor
                     4 - Buscar libros teniendo en cuenta si el autor estaba vivo en un rango de tiempo
-                    5 - Listar libros buscados
-                    6 - Listar autores buscados
+                    5 - Listar libros almacenados
+                    6 - Listar autores almacenados
                     7 - Listar autores vivos en determinado año
                                         
                     0 - Salir
@@ -64,10 +64,10 @@ public class Main {
                     buscarLibrosPorRangoTiempo();
                     break;
                 case 5:
-                    listarLibrosBuscados();
+                    listarLibrosAlmacenados();
                     break;
                 case 6:
-                    listarAutoresBuscados();
+                    listarAutoresAlmacenados();
                     break;
                 case 7:
                     break;
@@ -106,16 +106,21 @@ public class Main {
         mostrarLibros(json);
     }
 
-    private void listarLibrosBuscados() {
-        List<Libros> librosBuscados = librosRepositorio.findAllWithAutoresAndIdiomas();
+    private void listarLibrosAlmacenados() {
+        List<Libros> librosAlmacenados = librosRepositorio.findAllWithAutoresAndIdiomas();
 
-        librosBuscados.forEach(libro -> {
-            imprimirLbro(libro);
+        librosAlmacenados.forEach(libro -> {
+            imprimirLibroAlmacenado(libro);
         });
     }
 
 
-    private void listarAutoresBuscados(){
+    private void listarAutoresAlmacenados(){
+        List<Autor> autoresAlmacenados = autorRepositorio.findAll();
+
+        autoresAlmacenados.forEach(autor -> {
+            imprimirAutorAlmacenado(autor);
+        });
     }
 
     private void mostrarLibros(String json) {
@@ -165,7 +170,17 @@ public class Main {
         Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
 
         biblioteca.getDatosLibros().forEach(libro -> {
-            libro.getAutores().forEach(autorRepositorio::save);
+            libro.getAutores().forEach(autor -> {
+                Autor autorExistente = autorRepositorio.findByName(autor.getName());
+
+                if(autorExistente != null){
+                    libro.getAutores().remove(autor);
+                    libro.getAutores().add(autorExistente);
+                }else{
+                    autorRepositorio.save(autor);
+                }
+            });
+
             librosRepositorio.save(libro);
             imprimirLibroAgregado(libro);
         });
@@ -194,5 +209,28 @@ public class Main {
                 Número de descargas: %d
                 --------------------------------
                 """.formatted(libro.getId(), libro.getTitulo(), libro.getAutores(), libro.getIdiomas(), libro.getCantidadDescargas()));
+    }
+
+    private void imprimirLibroAlmacenado(Libros libro) {
+        System.out.println("""
+                
+                ------- LIBRO ALMACENADO -------
+                Titulo: %s
+                Autor: %s
+                Idioma: %s
+                Número de descargas: %d
+                --------------------------------
+                """.formatted(libro.getTitulo(), libro.getAutores(), libro.getIdiomas(), libro.getCantidadDescargas()));
+    }
+
+    private void imprimirAutorAlmacenado(Autor autor) {
+        System.out.println("""
+                
+                ------- AUTOR ALMACENADO -------
+                Nombre: %s
+                Fecha de Nacimiento: %d
+                Fecha de Fallecimiento: %d
+                --------------------------------
+                """.formatted(autor.getName(), autor.getBirth_year(), autor.getDeath_year()));
     }
 }
