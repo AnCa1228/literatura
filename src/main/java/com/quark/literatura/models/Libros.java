@@ -8,7 +8,6 @@ public class Libros {
     private Integer id;
     private String titulo;
     private List<Autor> autores;
-    private List<String> subjects;
     private List<String> idiomas;
     private Integer cantidadDescargas;
 
@@ -16,7 +15,6 @@ public class Libros {
         this.id = datosLibros.id();
         this.titulo = datosLibros.titulo();
         this.autores = datosLibros.autores();
-        this.subjects = datosLibros.subjects();
         this.idiomas = datosLibros.idiomas();
         this.cantidadDescargas = datosLibros.cantidadDescargas();
     }
@@ -49,14 +47,6 @@ public class Libros {
         this.autores = autores;
     }
 
-    public List<String> getSubjects() {
-        return subjects;
-    }
-
-    public void setSubjects(List<String> subjects) {
-        this.subjects = subjects;
-    }
-
     public List<String> getIdiomas() {
         return idiomas;
     }
@@ -76,10 +66,8 @@ public class Libros {
     @Override
     public String toString() {
         return "Libros{" +
-                "id=" + id +
-                ", titulo='" + titulo + '\'' +
+                "titulo='" + titulo + '\'' +
                 ", autores=" + autores +
-                ", subjects=" + subjects +
                 ", idiomas=" + idiomas +
                 ", cantidadDescargas=" + cantidadDescargas +
                 '}';

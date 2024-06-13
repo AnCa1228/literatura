@@ -10,6 +10,7 @@ import com.quark.literatura.service.ConvierteDatos;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -19,15 +20,19 @@ public class Main {
     private String URL = "https://gutendex.com/books/";
     private ConsumirAPI consumirAPI = new ConsumirAPI();
     private ConvierteDatos convierteDatos = new ConvierteDatos();
+    private Biblioteca biblioteca;
 
     public void muestraMenu() {
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
-                    1 - Buscar libros por titulo
-                    2 - Buscar libros por autor
-                    3 - Buscar libros por categoria
-                    4 - Libros Disponibles
+                    
+                    1 - Libros Disponibles
+                    2 - Buscar libros por titulo
+                    3 - Buscar libros por autor
+                    4 - Listar libros buscados
+                    5 - Listar autores buscados
+                    6 - Listar autores vivos en determinado año
                                         
                     0 - Salir
                     """;
@@ -37,17 +42,20 @@ public class Main {
 
             switch (opcion) {
                 case 1:
-                    System.out.println("Buscando libros por titulo");
+                    getDatosBiblioteca();
                     break;
                 case 2:
-                    System.out.println("Buscando libros por autor");
+                    buscarLibrosPorTitulo();
                     break;
                 case 3:
-                    System.out.println("Buscando libros por categoria");
+                    System.out.println("Buscando libros por autor");
+                    buscarLibrosPorAutor();
                     break;
                 case 4:
-                    System.out.println("Buscando libros disponibles");
-                    getDatosBiblioteca();
+                    break;
+                case 5:
+                    break;
+                case 6:
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -58,56 +66,56 @@ public class Main {
         }
     }
 
-    /*private void buscarLibrosDisponibles(){
-        var json = consumirAPI.obtenerDatos(URL);
-    }
-
-    private void buscarLibrosDisponibles() {
-        String json = consumirAPI.obtenerDatos(URL);
-
-        if (json == null || json.isEmpty()) {
-            System.out.println("Error: JSON recibido está vacío o es nulo.");
-            return;
-        }
-
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            Biblioteca biblioteca = mapper.readValue(json, Biblioteca.class);
-            System.out.println("Total de libros disponibles: " + biblioteca.getTotalLibros());
-            System.out.println("Detalles de los libros disponibles:");
-            for (Libros libro : biblioteca.getDatosLibros()) {
-                System.out.println("Título: " + libro.getTitulo());
-                System.out.println("Autores: ");
-                for (Autor autor : libro.getAutores()) {
-                    System.out.println("- " + autor.getName());
-                }
-                System.out.println("Idiomas: " + libro.getIdiomas());
-                System.out.println("Cantidad de Descargas: " + libro.getCantidadDescargas());
-                System.out.println();
-            }
-        } catch (IOException e) {
-            System.out.println("Error al obtener los libros disponibles: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }*/
-/*
-    private void getDatosBiblioteca(){
-        var json = consumirAPI.obtenerDatos(URL);
-        System.out.println(json);
-        DatosBiblioteca datos = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
-        Biblioteca biblioteca = new Biblioteca(datos);
-        System.out.println(biblioteca);;
-    }*/
-
     private void getDatosBiblioteca() {
         var json = consumirAPI.obtenerDatos(URL);
-        System.out.println(json);
         DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
         Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
         System.out.println(biblioteca);
     }
 
+    private void buscarLibrosPorTitulo() {
+        System.out.println("Introduzca el titulo del libro:");
+        String titulo = entrada.nextLine();
+        var json = consumirAPI.obtenerDatos(URL + "?search=" + titulo.replace(" ", "%20"));
+        DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
+        Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
+        System.out.println(biblioteca);
 
+        for (Libros libro : biblioteca.getDatosLibros()) {
+            System.out.println("");
+            System.out.println("-------- LIBRO --------");
+            System.out.println("Id: " + libro.getId());
+            System.out.println("Titulo: " + libro.getTitulo());
+            System.out.println("Autor: " + libro.getAutores());
+            System.out.println("Idioma: " + libro.getIdiomas());
+            System.out.println("Número de descargas: " + libro.getCantidadDescargas());
+            System.out.println("-----------------------");
+            System.out.println("");
+        }
 
+        System.out.println("Introduzca el id del libro que desea añadir a su listado");
+        int idLibroSeleccionado = entrada.nextInt();
+        libroPorID(idLibroSeleccionado);
+    }
 
+    private void libroPorID(int idLibroSeleccionado) {
+        var json = consumirAPI.obtenerDatos(URL + "?ids=" + idLibroSeleccionado);
+        DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
+        Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
+
+        for (Libros libro : biblioteca.getDatosLibros()) {
+            System.out.println("");
+            System.out.println("-------- LIBRO --------");
+            System.out.println("Id: " + libro.getId());
+            System.out.println("Titulo: " + libro.getTitulo());
+            System.out.println("Autor: " + libro.getAutores());
+            System.out.println("Idioma: " + libro.getIdiomas());
+            System.out.println("Número de descargas: " + libro.getCantidadDescargas());
+            System.out.println("-----------------------");
+            System.out.println("");
+        }
+    }
+
+    private void buscarLibrosPorAutor() {
+    }
 }

@@ -36,9 +36,8 @@ public class Biblioteca {
 
     @Override
     public String toString() {
-        return "Biblioteca{" +
-                "totalLibros=" + totalLibros +
-                ", datosLibros=" + datosLibros +
+        return "Biblioteca {" +
+                "Total Libros = " + totalLibros +
                 '}';
     }
 }
