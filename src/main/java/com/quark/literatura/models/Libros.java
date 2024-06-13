@@ -4,6 +4,7 @@ package com.quark.literatura.models;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "libros")
@@ -18,11 +19,11 @@ public class Libros {
             joinColumns = @JoinColumn(name = "libro_id"),
             inverseJoinColumns = @JoinColumn(name = "autor_id")
     )
-    private List<Autor> autores;
+    private Set<Autor> autores;
     @ElementCollection
     @CollectionTable(name = "libros_idiomas", joinColumns = @JoinColumn(name = "libro_id"))
     @Column(name = "idioma")
-    private List<String> idiomas;
+    private Set<String> idiomas;
     private Integer cantidadDescargas;
 
     public Libros(DatosLibros datosLibros) {
@@ -53,7 +54,23 @@ public class Libros {
         this.titulo = titulo;
     }
 
-    public List<Autor> getAutores() {
+    public Set<Autor> getAutores() {
+        return autores;
+    }
+
+    public void setAutores(Set<Autor> autores) {
+        this.autores = autores;
+    }
+
+    public Set<String> getIdiomas() {
+        return idiomas;
+    }
+
+    public void setIdiomas(Set<String> idiomas) {
+        this.idiomas = idiomas;
+    }
+
+    /*public List<Autor> getAutores() {
         return autores;
     }
 
@@ -67,7 +84,7 @@ public class Libros {
 
     public void setIdiomas(List<String> idiomas) {
         this.idiomas = idiomas;
-    }
+    }*/
 
     public Integer getCantidadDescargas() {
         return cantidadDescargas;

@@ -107,11 +107,13 @@ public class Main {
     }
 
     private void listarLibrosBuscados() {
-        /*librosBuscados = librosRepositorio.findAll();
+        List<Libros> librosBuscados = librosRepositorio.findAllWithAutoresAndIdiomas();
 
-        librosBuscados.stream()
-                .forEach(System.out::println);*/
+        librosBuscados.forEach(libro -> {
+            imprimirLbro(libro);
+        });
     }
+
 
     private void listarAutoresBuscados(){
     }
