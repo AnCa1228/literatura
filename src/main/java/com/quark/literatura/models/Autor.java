@@ -1,11 +1,22 @@
 package com.quark.literatura.models;
 
+import jakarta.persistence.*;
 
+import java.util.List;
 
+@Entity
+@Table(name = "autores")
 public class Autor {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(unique = true)
+    private Integer id;
     private String name;
     private Integer birth_year;
     private Integer death_year;
+
+    @ManyToMany(mappedBy = "autores")
+    private List<Libros> libros;
 
     public Autor(DatosAutor datosAutor) {
         this.name = datosAutor.name();
@@ -14,6 +25,14 @@ public class Autor {
     }
 
     public Autor() {
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {

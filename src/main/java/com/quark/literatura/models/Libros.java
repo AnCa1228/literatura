@@ -1,13 +1,27 @@
 package com.quark.literatura.models;
 
 
+import jakarta.persistence.*;
+
 import java.util.List;
 
-
+@Entity
+@Table(name = "libros")
 public class Libros {
+    @Id
+    @Column(unique = true)
     private Integer id;
     private String titulo;
+    @ManyToMany
+    @JoinTable(
+            name = "libros_autores",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
+    )
     private List<Autor> autores;
+    @ElementCollection
+    @CollectionTable(name = "libros_idiomas", joinColumns = @JoinColumn(name = "libro_id"))
+    @Column(name = "idioma")
     private List<String> idiomas;
     private Integer cantidadDescargas;
 

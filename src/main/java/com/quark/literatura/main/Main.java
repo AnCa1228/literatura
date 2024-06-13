@@ -5,8 +5,12 @@ import com.quark.literatura.models.Autor;
 import com.quark.literatura.models.Biblioteca;
 import com.quark.literatura.models.DatosBiblioteca;
 import com.quark.literatura.models.Libros;
+import com.quark.literatura.repository.AutorRepository;
+import com.quark.literatura.repository.LibrosRepository;
 import com.quark.literatura.service.ConsumirAPI;
 import com.quark.literatura.service.ConvierteDatos;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,6 +25,13 @@ public class Main {
     private ConsumirAPI consumirAPI = new ConsumirAPI();
     private ConvierteDatos convierteDatos = new ConvierteDatos();
     private Biblioteca biblioteca;
+    private LibrosRepository librosRepositorio;
+    private AutorRepository autorRepositorio;
+
+    public Main(LibrosRepository librosRepository, AutorRepository autorRepository) {
+        this.librosRepositorio = librosRepository;
+        this.autorRepositorio = autorRepository;
+    }
 
     public void muestraMenu() {
         var opcion = -1;
@@ -113,6 +124,7 @@ public class Main {
                 case 1:
                     System.out.println("Introduzca el id del libro que desea añadir a su listado");
                     int idLibroSeleccionado = entrada.nextInt();
+                    entrada.nextLine();
                     libroPorID(idLibroSeleccionado);
                     break;
                 case 2:
@@ -130,6 +142,12 @@ public class Main {
         Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
 
         for (Libros libro : biblioteca.getDatosLibros()) {
+            for (Autor autor : libro.getAutores()) {
+                autorRepositorio.save(autor);
+            }
+
+            librosRepositorio.save(libro);
+
             System.out.println("");
             System.out.println("-------- LIBRO AGREGADO --------");
             System.out.println("Id: " + libro.getId());
@@ -185,6 +203,7 @@ public class Main {
                 case 1:
                     System.out.println("Introduzca el id del libro que desea añadir a su listado");
                     int idLibroSeleccionado = entrada.nextInt();
+                    entrada.nextLine();
                     libroPorID(idLibroSeleccionado);
                     break;
                 case 2:
