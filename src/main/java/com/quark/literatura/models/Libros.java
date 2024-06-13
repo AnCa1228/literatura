@@ -1,41 +1,35 @@
 package com.quark.literatura.models;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class Libros {
-    private int id;
-    @JsonAlias("title")
+    private Integer id;
     private String titulo;
-    @JsonAlias("authors")
     private List<Autor> autores;
     private List<String> subjects;
-    @JsonAlias("languages")
     private List<String> idiomas;
-    @JsonAlias("download_count")
-    private int cantidadDescargas;
+    private Integer cantidadDescargas;
 
-    public Libros(int id, String titulo, List<Autor> autores, List<String> subjects, List<String> idiomas, int cantidadDescargas) {
-        this.id = id;
-        this.titulo = titulo;
-        this.autores = autores;
-        this.subjects = subjects;
-        this.idiomas = idiomas;
-        this.cantidadDescargas = cantidadDescargas;
+    public Libros(DatosLibros datosLibros) {
+        this.id = datosLibros.id();
+        this.titulo = datosLibros.titulo();
+        this.autores = datosLibros.autores();
+        this.subjects = datosLibros.subjects();
+        this.idiomas = datosLibros.idiomas();
+        this.cantidadDescargas = datosLibros.cantidadDescargas();
     }
 
     public Libros(){
 
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -71,11 +65,23 @@ public class Libros {
         this.idiomas = idiomas;
     }
 
-    public int getCantidadDescargas() {
+    public Integer getCantidadDescargas() {
         return cantidadDescargas;
     }
 
-    public void setCantidadDescargas(int cantidadDescargas) {
+    public void setCantidadDescargas(Integer cantidadDescargas) {
         this.cantidadDescargas = cantidadDescargas;
+    }
+
+    @Override
+    public String toString() {
+        return "Libros{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", autores=" + autores +
+                ", subjects=" + subjects +
+                ", idiomas=" + idiomas +
+                ", cantidadDescargas=" + cantidadDescargas +
+                '}';
     }
 }

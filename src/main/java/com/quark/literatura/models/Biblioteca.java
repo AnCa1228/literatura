@@ -1,21 +1,19 @@
 package com.quark.literatura.models;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.List;
+import java.util.stream.Collectors;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+
 public class Biblioteca {
 
-    @JsonAlias("count")
     private Integer totalLibros;
-    @JsonAlias("results")
     private List<Libros> datosLibros;
 
-    public Biblioteca(Integer totalLibros, List<Libros> datosLibros) {
-        this.totalLibros = totalLibros;
-        this.datosLibros = datosLibros;
+    public Biblioteca(DatosBiblioteca datosBiblioteca) {
+        this.totalLibros = datosBiblioteca.totalLibros();
+        this.datosLibros = datosBiblioteca.datosLibros().stream()
+                .map(Libros::new)
+                .collect(Collectors.toList());
     }
 
     public Biblioteca(){}
@@ -34,5 +32,13 @@ public class Biblioteca {
 
     public void setDatosLibros(List<Libros> datosLibros) {
         this.datosLibros = datosLibros;
+    }
+
+    @Override
+    public String toString() {
+        return "Biblioteca{" +
+                "totalLibros=" + totalLibros +
+                ", datosLibros=" + datosLibros +
+                '}';
     }
 }

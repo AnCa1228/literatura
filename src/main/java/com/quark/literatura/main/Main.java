@@ -3,17 +3,22 @@ package com.quark.literatura.main;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quark.literatura.models.Autor;
 import com.quark.literatura.models.Biblioteca;
+import com.quark.literatura.models.DatosBiblioteca;
 import com.quark.literatura.models.Libros;
 import com.quark.literatura.service.ConsumirAPI;
+import com.quark.literatura.service.ConvierteDatos;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Main {
 
     private Scanner entrada = new Scanner(System.in);
     private String URL = "https://gutendex.com/books/";
     private ConsumirAPI consumirAPI = new ConsumirAPI();
+    private ConvierteDatos convierteDatos = new ConvierteDatos();
 
     public void muestraMenu() {
         var opcion = -1;
@@ -42,7 +47,7 @@ public class Main {
                     break;
                 case 4:
                     System.out.println("Buscando libros disponibles");
-                    buscarLibrosDisponibles();
+                    getDatosBiblioteca();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -53,11 +58,11 @@ public class Main {
         }
     }
 
-    private void buscarLibrosDisponibles(){
+    /*private void buscarLibrosDisponibles(){
         var json = consumirAPI.obtenerDatos(URL);
     }
 
-    /*private void buscarLibrosDisponibles() {
+    private void buscarLibrosDisponibles() {
         String json = consumirAPI.obtenerDatos(URL);
 
         if (json == null || json.isEmpty()) {
@@ -85,4 +90,24 @@ public class Main {
             e.printStackTrace();
         }
     }*/
+/*
+    private void getDatosBiblioteca(){
+        var json = consumirAPI.obtenerDatos(URL);
+        System.out.println(json);
+        DatosBiblioteca datos = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
+        Biblioteca biblioteca = new Biblioteca(datos);
+        System.out.println(biblioteca);;
+    }*/
+
+    private void getDatosBiblioteca() {
+        var json = consumirAPI.obtenerDatos(URL);
+        System.out.println(json);
+        DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
+        Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
+        System.out.println(biblioteca);
+    }
+
+
+
+
 }
