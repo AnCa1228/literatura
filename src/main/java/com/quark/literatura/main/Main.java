@@ -45,8 +45,14 @@ public class Main {
                     0 - Salir
                     """;
             System.out.println(menu);
-            opcion = entrada.nextInt();
-            entrada.nextLine();
+            try {
+                opcion = entrada.nextInt();
+                entrada.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Debe ingresar un número entero.");
+                entrada.nextLine();
+                continue;
+            }
 
             switch (opcion) {
                 case 1:
@@ -71,10 +77,15 @@ public class Main {
                     listarAutoresAlmacenados();
                     break;
                 case 8:
-                    System.out.println("Introduzca el id del libro que desea añadir a su listado");
-                    int idLibroAgg = entrada.nextInt();
-                    entrada.nextLine();
-                    libroPorID(idLibroAgg);
+                    try {
+                        System.out.println("Introduzca el id del libro que desea añadir a su listado");
+                        int idLibroAgg = entrada.nextInt();
+                        entrada.nextLine();
+                        libroPorID(idLibroAgg);
+                    } catch (InputMismatchException e) {
+                        System.out.println("Error: Debe ingresar un número entero.");
+                        entrada.nextLine();
+                    }
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -134,7 +145,6 @@ public class Main {
         }
     }
 
-
     private void listarLibrosAlmacenados() {
         List<Libros> librosAlmacenados = librosRepositorio.findAllWithAutoresAndIdiomas();
 
@@ -170,15 +180,26 @@ public class Main {
                     
                     """;
                 System.out.println(opciones);
-                agregar = entrada.nextInt();
-                entrada.nextLine();
+                try {
+                    agregar = entrada.nextInt();
+                    entrada.nextLine();
+                } catch (InputMismatchException e) {
+                    System.out.println("Error: Debe ingresar un número entero.");
+                    entrada.nextLine();
+                    continue;
+                }
 
                 switch (agregar) {
                     case 1:
-                        System.out.println("Introduzca el id del libro que desea añadir a su listado");
-                        int idLibroSeleccionado = entrada.nextInt();
-                        entrada.nextLine();
-                        libroPorID(idLibroSeleccionado);
+                        try {
+                            System.out.println("Introduzca el id del libro que desea añadir a su listado");
+                            int idLibroSeleccionado = entrada.nextInt();
+                            entrada.nextLine();
+                            libroPorID(idLibroSeleccionado);
+                        }catch (InputMismatchException e) {
+                            System.out.println("Error: Debe ingresar un número entero.");
+                            entrada.nextLine();
+                        }
                         break;
                     case 2:
                         break;
