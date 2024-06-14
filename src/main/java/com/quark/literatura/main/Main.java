@@ -9,9 +9,7 @@ import com.quark.literatura.repository.LibrosRepository;
 import com.quark.literatura.service.ConsumirAPI;
 import com.quark.literatura.service.ConvierteDatos;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -38,10 +36,11 @@ public class Main {
                     1 - Libros Disponibles
                     2 - Buscar libros por titulo
                     3 - Buscar libros por autor
-                    4 - Buscar libros teniendo en cuenta si el autor estaba vivo en un rango de tiempo
-                    5 - Listar libros almacenados
-                    6 - Listar autores almacenados
-                    7 - Listar autores vivos en determinado año
+                    4 - Buscar libros por idioma
+                    5 - Buscar autores vivos en un año determinado
+                    6 - Listar libros almacenados
+                    7 - Listar autores almacenados
+                    8 - Almacenar libro por ID
                                         
                     0 - Salir
                     """;
@@ -57,19 +56,25 @@ public class Main {
                     buscarLibrosPorTitulo();
                     break;
                 case 3:
-                    System.out.println("Buscando libros por autor");
                     buscarLibrosPorAutor();
                     break;
                 case 4:
-                    buscarLibrosPorRangoTiempo();
+                    buscarLibrosPorIdioma();
                     break;
                 case 5:
-                    listarLibrosAlmacenados();
+                    buscarAutoresVivosPorAnnio();
                     break;
                 case 6:
-                    listarAutoresAlmacenados();
+                    listarLibrosAlmacenados();
                     break;
                 case 7:
+                    listarAutoresAlmacenados();
+                    break;
+                case 8:
+                    System.out.println("Introduzca el id del libro que desea añadir a su listado");
+                    int idLibroAgg = entrada.nextInt();
+                    entrada.nextLine();
+                    libroPorID(idLibroAgg);
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -95,16 +100,40 @@ public class Main {
     }
 
     private void buscarLibrosPorAutor() {
-    }
-
-    private void buscarLibrosPorRangoTiempo() {
-        System.out.println("Introduzca el año inicial:");
-        String inicio = entrada.nextLine();
-        System.out.println("Introduzca el año final:");
-        String fin = entrada.nextLine();
-        var json = consumirAPI.obtenerDatos(URL + "?author_year_start=" + inicio + "&author_year_end=" + fin);
+        System.out.println("Introduzca el nombre del autor:");
+        String nombreAutor = entrada.nextLine();
+        var json = consumirAPI.obtenerDatos(URL + "?search=" + nombreAutor.replace(" ", "%20"));
         mostrarLibros(json);
     }
+
+    private void buscarLibrosPorIdioma(){
+        System.out.println("Introduzca la abreviación del idioma: en,es,fr...");
+        String idioma = entrada.nextLine();
+        var json = consumirAPI.obtenerDatos(URL + "?languages=" + idioma.replace(" ", ","));
+        mostrarLibros(json);
+    }
+
+    private void buscarAutoresVivosPorAnnio() {
+        System.out.println("Introduzca el año:");
+        int annio = entrada.nextInt();
+        entrada.nextLine();
+        var json = consumirAPI.obtenerDatos(URL + "?author_year_start=" + annio + "&author_year_end=" + annio);
+        DatosBiblioteca datosBiblioteca = convierteDatos.obtenerDatos(json, DatosBiblioteca.class);
+        Biblioteca biblioteca = new Biblioteca(datosBiblioteca);
+        List<Autor> autoresVivos = biblioteca.getDatosLibros()
+                .stream()
+                .flatMap(libro -> libro.getAutores().stream())
+                .filter(autor -> estaVivoEnAnnio(autor, annio))
+                .distinct()
+                .toList();
+
+        if (autoresVivos.isEmpty()) {
+            System.out.println("No se encontraron autores vivos en el año " + annio);
+        } else {
+            autoresVivos.forEach(this::imprimirAutor);
+        }
+    }
+
 
     private void listarLibrosAlmacenados() {
         List<Libros> librosAlmacenados = librosRepositorio.findAllWithAutoresAndIdiomas();
@@ -113,7 +142,6 @@ public class Main {
             imprimirLibroAlmacenado(libro);
         });
     }
-
 
     private void listarAutoresAlmacenados(){
         List<Autor> autoresAlmacenados = autorRepositorio.findAll();
@@ -223,6 +251,17 @@ public class Main {
                 """.formatted(libro.getTitulo(), libro.getAutores(), libro.getIdiomas(), libro.getCantidadDescargas()));
     }
 
+    private void imprimirAutor(Autor autor) {
+        System.out.println("""
+                
+                ---------- AUTOR ----------
+                Nombre: %s
+                Fecha de Nacimiento: %d
+                Fecha de Fallecimiento: %d
+                ---------------------------
+                """.formatted(autor.getName(), autor.getBirth_year(), autor.getDeath_year()));
+    }
+
     private void imprimirAutorAlmacenado(Autor autor) {
         System.out.println("""
                 
@@ -232,5 +271,12 @@ public class Main {
                 Fecha de Fallecimiento: %d
                 --------------------------------
                 """.formatted(autor.getName(), autor.getBirth_year(), autor.getDeath_year()));
+    }
+
+    private boolean estaVivoEnAnnio(Autor autor, int annio) {
+        Integer birthYear = autor.getBirth_year();
+        Integer deathYear = autor.getDeath_year();
+
+        return (birthYear != null && birthYear <= annio) && (deathYear == null || deathYear >= annio);
     }
 }
